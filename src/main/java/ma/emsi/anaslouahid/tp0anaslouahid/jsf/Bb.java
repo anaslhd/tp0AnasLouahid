@@ -107,27 +107,57 @@ public class Bb implements Serializable {
      */
     public String envoyer() {
         if (question == null || question.isBlank()) {
-            // Erreur ! Le formulaire va être automatiquement réaffiché par JSF en réponse à la requête POST,
-            // avec le message d'erreur donné ci-dessous.
+            // Gestion de l'erreur si le texte est vide
             FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR,
                     "Texte question vide", "Il manque le texte de la question");
             facesContext.addMessage(null, message);
             return null;
         }
-        // Entourer la réponse avec "||".
+
+        // Initialisation de la réponse avec les délimiteurs
         this.reponse = "||";
-        // Si la conversation n'a pas encore commencé, ajouter le rôle système au début de la réponse
+
+        // Ajouter le rôle système si la conversation commence
         if (this.conversation.isEmpty()) {
-            // Ajouter le rôle système au début de la réponse
             this.reponse += systemRole.toUpperCase(Locale.FRENCH) + "\n";
-            // Invalide le bouton pour changer le rôle système
             this.systemRoleChangeable = false;
         }
+
         this.reponse += question.toLowerCase(Locale.FRENCH) + "||";
-        // La conversation contient l'historique des questions-réponses depuis le début.
+
+        // Détails ASCII
+        StringBuilder asciiDetails = new StringBuilder("\n--- Détails ASCII ---\n");
+        int totalAsciiSum = 0;
+
+        String[] words = question.split("\\s+"); // Divise la question en mots
+        for (String word : words) {
+            int wordAsciiSum = 0;
+            asciiDetails.append("Mot : ").append(word).append("\n");
+
+            for (char c : word.toCharArray()) {
+                int asciiValue = (int) c;
+                wordAsciiSum += asciiValue;
+                asciiDetails.append("  Lettre : '").append(c).append("' => Code ASCII : ").append(asciiValue).append("\n");
+            }
+
+            asciiDetails.append("  Somme ASCII du mot : ").append(wordAsciiSum).append("\n");
+            totalAsciiSum += wordAsciiSum;
+        }
+
+        asciiDetails.append("---\n")
+                .append("Somme ASCII totale de la phrase : ").append(totalAsciiSum).append("\n");
+
+        // Ajouter les détails ASCII à la réponse
+        this.reponse += asciiDetails;
+
+        // Afficher la conversation complète
         afficherConversation();
+
         return null;
     }
+
+
+
 
     /**
      * Pour un nouveau chat.
